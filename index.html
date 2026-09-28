@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive accounts receivable aging analysis for ACC 455.">
+  <title>AR Aging Analysis | ACC 455</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23BC9EC0'/%3E%3Cstop offset='.55' stop-color='%23D2C0E6'/%3E%3Cstop offset='1' stop-color='%2367C5E9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='%23282828'/%3E%3Crect x='4' y='4' width='56' height='56' rx='12' fill='url(%23g)' opacity='.94'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-family='Arial,sans-serif' font-size='40' font-weight='700' fill='white'%3E%24%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#analysis-content">Skip to analysis</a>
+
+  <header class="app-header">
+    <div class="header-accent" aria-hidden="true"></div>
+    <div class="header-inner">
+      <div class="brand-block">
+        <h1>Accounts Receivable <span>Aging Analysis</span></h1>
+        <p class="subtitle">ACC 455: Audit Data Analytics | Interactive Workflow &amp; Aging Analysis</p>
+      </div>
+      <dl class="dataset-meta" aria-label="Current analysis information">
+        <div>
+          <dt>Dataset</dt>
+          <dd id="header-dataset">No workbook</dd>
+        </div>
+        <div>
+          <dt>Records</dt>
+          <dd id="header-records">—</dd>
+        </div>
+        <div>
+          <dt>Analysis Date</dt>
+          <dd id="header-date">02/01/2026</dd>
+        </div>
+      </dl>
+    </div>
+  </header>
+
+  <nav class="analysis-nav" aria-label="Analysis dimensions">
+    <div class="tab-list" role="tablist" aria-label="Accounts receivable analyses">
+      <button class="tab-button is-active" id="tab-one" type="button" role="tab" aria-selected="true" aria-controls="panel-one" data-tab="one-dimensional">
+        <span class="tab-index">01</span>
+        <span>One-Dimensional Aging</span>
+      </button>
+      <button class="tab-button" id="tab-two" type="button" role="tab" aria-selected="false" aria-controls="panel-two" data-tab="two-dimensional" tabindex="-1">
+        <span class="tab-index">02</span>
+        <span>Two-Dimensional Aging</span>
+      </button>
+      <button class="tab-button" id="tab-three" type="button" role="tab" aria-selected="false" aria-controls="panel-three" data-tab="three-dimensional" tabindex="-1">
+        <span class="tab-index">03</span>
+        <span>Three-Dimensional Aging</span>
+      </button>
+    </div>
+  </nav>
+
+  <section class="control-wrap" aria-label="Data controls">
+    <div class="control-bar">
+      <div class="upload-control">
+        <label class="upload-button" for="workbook-upload">
+          <span class="upload-icon" aria-hidden="true">↑</span>
+          <span>Upload Excel File</span>
+        </label>
+        <input id="workbook-upload" type="file" accept=".xlsx,.xls">
+      </div>
+      <label class="date-control" for="analysis-date">
+        <span>Analysis Date</span>
+        <input id="analysis-date" type="date" value="2026-02-01">
+      </label>
+      <button class="reset-button" id="reset-analysis" type="button">Reset Analysis</button>
+      <div class="dataset-status" id="dataset-status" role="status" aria-live="polite">
+        <span class="status-mark" aria-hidden="true">○</span>
+        <span>
+          <strong>Waiting for a workbook</strong>
+          <small>Upload a compatible Excel file to begin</small>
+        </span>
+      </div>
+      <button class="quality-button" id="quality-button" type="button" aria-expanded="false" aria-controls="quality-popover" disabled>
+        <span>Data Quality</span>
+        <strong id="quality-count">—</strong>
+      </button>
+    </div>
+    <div class="quality-popover" id="quality-popover" hidden>
+      <div>
+        <strong>Data Quality</strong>
+        <button type="button" id="quality-close" aria-label="Close data quality details">×</button>
+      </div>
+      <p id="quality-summary">No workbook has been evaluated.</p>
+      <ul id="quality-reasons"></ul>
+    </div>
+    <div class="error-card" id="error-card" role="alert" hidden>
+      <span aria-hidden="true">!</span>
+      <div>
+        <strong>Unable to process workbook</strong>
+        <p id="error-message"></p>
+      </div>
+      <button type="button" id="dismiss-error" aria-label="Dismiss error">×</button>
+    </div>
+  </section>
+
+  <main id="analysis-content">
+    <section class="analysis-panel is-active" id="panel-one" role="tabpanel" aria-labelledby="tab-one" data-panel="one-dimensional">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">Analysis 01</p>
+          <h2>One-Dimensional Aging Analysis</h2>
+        </div>
+        <p>Calculate invoice age, classify receivables, and summarize balances by aging category.</p>
+      </div>
+
+      <div class="analysis-grid">
+        <aside class="workflow-panel" aria-labelledby="workflow-one-title">
+          <div class="panel-label"><span>Workflow</span><small>Alteryx logic</small></div>
+          <div class="workflow-intro">
+            <h3 id="workflow-one-title">Prepare &amp; summarize AR</h3>
+            <p>Two source sheets are aligned, enriched, aged, classified, and routed to detailed and summarized outputs.</p>
+          </div>
+          <div class="workflow-canvas" data-workflow="one">
+            <div class="workflow-inputs">
+              <button class="workflow-node node-input" type="button" data-title="Input Data — Breakdown of Sales" data-detail="Reads Customer, sales person, Bal., and Inv. Date from the transaction worksheet.">
+                <span class="node-icon" aria-hidden="true">IN</span><span><strong>Input Data — Breakdown of Sales</strong><small>Loads customer, salesperson, balance, and invoice date transaction fields.</small></span>
+              </button>
+              <button class="workflow-node node-input" type="button" data-title="Input Data — Customer Type" data-detail="Reads the Customer and Cust. Type fields used to enrich each transaction.">
+                <span class="node-icon" aria-hidden="true">IN</span><span><strong>Input Data — Customer Type</strong><small>Supplies the customer type used to segment outstanding receivables.</small></span>
+              </button>
+            </div>
+            <span class="connector merge" aria-hidden="true"></span>
+            <button class="workflow-node node-join" type="button" data-title="Join — Combine AR + Customer Type" data-detail="Aligns the two source sheets by record position when their Customer values match, mirroring the assignment workflow.">
+              <span class="node-icon" aria-hidden="true">⋈</span><span><strong>Join</strong><small>Aligns each AR transaction with its corresponding customer type.</small></span>
+            </button>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-formula" type="button" data-title="Formula — Calculate Aging" data-detail="Calculates calendar days between each invoice date and the selected analysis date.">
+              <span class="node-icon" aria-hidden="true">ƒx</span><span><strong>Formula — Aging</strong><small>Calculates calendar days from invoice date to the selected analysis date.</small></span>
+            </button>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-formula" type="button" data-title="Formula — Classify Aging" data-detail="Assigns every invoice to current, 30–59 days, 60–89 days, or over 90 days.">
+              <span class="node-icon" aria-hidden="true">ƒx</span><span><strong>Formula — Classification</strong><small>Assigns current, 30–59, 60–89, or over-90-day aging status.</small></span>
+            </button>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-select" type="button" data-title="Select — Prepare Fields" data-detail="Keeps the audit-ready fields and prepares the invoice date for output.">
+              <span class="node-icon" aria-hidden="true">✓</span><span><strong>Select</strong><small>Retains audit-ready fields and formats the invoice date for output.</small></span>
+            </button>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-block" type="button" data-title="Block Until Done — Control Output Sequence" data-detail="Routes the same processed records to detailed, summarized, and pivot-style outputs in a controlled sequence.">
+              <span class="node-icon" aria-hidden="true">Ⅱ</span><span><strong>Block Until Done</strong><small>Ensures classified detail is complete before summaries and pivots run.</small></span>
+            </button>
+            <span class="connector split" aria-hidden="true"></span>
+            <div class="workflow-outputs">
+              <button class="workflow-node node-output" type="button" data-title="Output Data — Transaction Detail" data-detail="Represents the processed transaction-level output with aging and classification added.">
+                <span class="node-icon" aria-hidden="true">OUT</span><span><strong>Output Data</strong><small>Presents invoice-level detail with aging, type, balance, and classification.</small></span>
+              </button>
+              <button class="workflow-node node-summarize" type="button" data-title="Summarize — Aging Analysis" data-detail="Groups by Classification and calculates sum, count, average, and maximum balance.">
+                <span class="node-icon" aria-hidden="true">Σ</span><span><strong>Summarize</strong><small>Groups by aging category and computes sum, count, average, and maximum.</small></span>
+              </button>
+            </div>
+          </div>
+          <div class="workflow-detail" aria-live="polite">
+            <span>What this step does</span>
+            <strong>Select a workflow step</strong>
+            <p>Choose any node to see how it contributes to the analysis.</p>
+          </div>
+        </aside>
+
+        <div class="output-panel">
+          <div class="panel-label"><span>Output</span><small id="as-of-one">Awaiting data</small></div>
+          <div class="empty-state" data-empty="one">
+            <div class="empty-glyph" aria-hidden="true">↗</div>
+            <h3>Upload an AR Excel workbook</h3>
+            <p>Use the control above to generate the transaction detail, aging summary, and distribution chart. Your data stays in this browser.</p>
+          </div>
+          <div class="analysis-results" data-results="one" hidden>
+            <section class="kpi-grid" aria-label="Key performance indicators">
+              <article class="kpi-card">
+                <span class="kpi-label">Total Receivables</span>
+                <strong id="kpi-total">$0.00</strong>
+                <small>Across all aging categories</small>
+              </article>
+              <article class="kpi-card">
+                <span class="kpi-label">Total Invoices</span>
+                <strong id="kpi-count">0</strong>
+                <small>Valid transaction records</small>
+              </article>
+              <article class="kpi-card">
+                <span class="kpi-label">Average Invoice Balance</span>
+                <strong id="kpi-average">$0.00</strong>
+                <small>Mean outstanding balance</small>
+              </article>
+              <article class="kpi-card kpi-alert">
+                <span class="kpi-label">Over 90 Days Balance</span>
+                <strong id="kpi-over90">$0.00</strong>
+                <small id="kpi-over90-share">0.0% of total AR</small>
+              </article>
+            </section>
+
+            <section class="output-card table-card">
+              <div class="card-heading">
+                <div><span class="card-index">A</span><div><h3>Processed AR Records</h3><p>Transaction-level audit population</p></div></div>
+                <span class="row-count" id="transaction-count">0 records</span>
+              </div>
+              <div class="table-controls">
+                <label class="search-field" for="table-search"><span aria-hidden="true">⌕</span><input id="table-search" type="search" placeholder="Search customer or sales person…"></label>
+                <label class="filter-field" for="classification-filter"><span>Classification</span><select id="classification-filter"><option value="all">All categories</option><option value="current">Current</option><option value="30-59 days">30–59 days</option><option value="60-89 days">60–89 days</option><option value="over 90 days">Over 90 days</option></select></label>
+              </div>
+              <div class="table-shell transaction-shell">
+                <table id="transaction-table">
+                  <thead><tr>
+                    <th scope="col"><button type="button" data-sort="customer">Customer <span aria-hidden="true">↕</span></button></th>
+                    <th scope="col"><button type="button" data-sort="salesPerson">Sales Person <span aria-hidden="true">↕</span></button></th>
+                    <th scope="col" class="num"><button type="button" data-sort="balance">Balance <span aria-hidden="true">↕</span></button></th>
+                    <th scope="col"><button type="button" data-sort="invoiceDate">Invoice Date <span aria-hidden="true">↕</span></button></th>
+                    <th scope="col"><button type="button" data-sort="customerType">Customer Type <span aria-hidden="true">↕</span></button></th>
+                    <th scope="col" class="num"><button type="button" data-sort="aging">Aging <span aria-hidden="true">↕</span></button></th>
+                    <th scope="col"><button type="button" data-sort="classification">Classification <span aria-hidden="true">↕</span></button></th>
+                  </tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="output-card">
+              <div class="card-heading"><div><span class="card-index">B</span><div><h3>Aging Summary</h3><p>Balances and transaction statistics by category</p></div></div></div>
+              <div class="table-shell">
+                <table id="aging-summary-table">
+                  <thead><tr><th scope="col">Aging Category</th><th scope="col" class="num">Sum of Balance</th><th scope="col" class="num">Transaction Count</th><th scope="col" class="num">Average Balance</th><th scope="col" class="num">Maximum Balance</th><th scope="col" class="num">% of Total AR</th></tr></thead>
+                  <tbody></tbody><tfoot></tfoot>
+                </table>
+              </div>
+            </section>
+
+            <section class="output-card chart-card">
+              <div class="card-heading"><div><span class="card-index">C</span><div><h3>Aging Distribution</h3><p>Total AR balance by aging category</p></div></div></div>
+              <div class="chart-wrap"><canvas id="aging-chart" role="img" aria-label="Bar chart showing total accounts receivable balance by aging category"></canvas></div>
+            </section>
+
+            <article class="audit-card">
+              <div class="audit-icon" aria-hidden="true">◎</div>
+              <div><span>Audit Observation</span><p id="audit-one"></p></div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="analysis-panel" id="panel-two" role="tabpanel" aria-labelledby="tab-two" data-panel="two-dimensional" hidden>
+      <div class="section-heading">
+        <div><p class="section-kicker">Analysis 02</p><h2>Two-Dimensional Aging Analysis</h2></div>
+        <p>Analyze accounts receivable simultaneously by Customer and Aging Classification.</p>
+      </div>
+      <div class="analysis-grid">
+        <aside class="workflow-panel" aria-labelledby="workflow-two-title">
+          <div class="panel-label"><span>Workflow</span><small>Alteryx logic</small></div>
+          <div class="workflow-intro"><h3 id="workflow-two-title">Pivot by customer</h3><p>The processed AR population is transformed into a customer-level aging matrix.</p></div>
+          <div class="workflow-canvas compact" data-workflow="two">
+            <button class="workflow-node node-output" type="button" data-title="Processed AR Data" data-detail="Uses the cleansed, enriched, aged, and classified transaction population from Analysis 01."><span class="node-icon" aria-hidden="true">AR</span><span><strong>Processed AR Data</strong><small>Uses cleaned invoice age, customer type, balance, and aging category fields.</small></span></button>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-block" type="button" data-title="Block Until Done" data-detail="Routes the processed dataset to the two-dimensional analysis output."><span class="node-icon" aria-hidden="true">Ⅱ</span><span><strong>Block Until Done</strong><small>Waits for classified AR detail before the customer pivot is generated.</small></span></button>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-crosstab featured" type="button" data-title="Cross Tab — Customer × Classification" data-detail="Groups rows by Customer, creates a column for each Classification, and sums Balance into each intersection."><span class="node-icon" aria-hidden="true">⊞</span><span><strong>Cross Tab</strong><small>Builds a Customer × Aging pivot using summed outstanding balances.</small></span></button>
+            <div class="config-card" aria-label="Cross Tab configuration"><div><span>Rows</span><strong>Customer</strong></div><div><span>Columns</span><strong>Classification</strong></div><div><span>Values</span><strong>Balance</strong></div><div><span>Aggregation</span><strong>Sum</strong></div></div>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-output" type="button" data-title="Output Data" data-detail="Represents the customer-by-aging pivot table written to a new analytical output."><span class="node-icon" aria-hidden="true">OUT</span><span><strong>Output Data</strong><small>Presents the completed customer aging table for audit review.</small></span></button>
+          </div>
+          <div class="workflow-detail" aria-live="polite"><span>What this step does</span><strong>Select a workflow step</strong><p>Choose any node to see how it contributes to the analysis.</p></div>
+        </aside>
+        <div class="output-panel">
+          <div class="panel-label"><span>Output</span><small id="as-of-two">Awaiting data</small></div>
+          <div class="empty-state" data-empty="two"><div class="empty-glyph" aria-hidden="true">⊞</div><h3>Customer aging is ready after upload</h3><p>Load a compatible workbook to build the customer-by-classification pivot and stacked comparison.</p></div>
+          <div class="analysis-results" data-results="two" hidden>
+            <section class="output-card pivot-card">
+              <div class="card-heading"><div><span class="card-index">A</span><div><h3>Customer × Aging Analysis</h3><p>Sum of outstanding balance</p></div></div><span class="reconcile-badge">Reconciled</span></div>
+              <div class="table-shell"><table id="customer-pivot-table"><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
+            </section>
+            <section class="output-card chart-card large-chart">
+              <div class="card-heading"><div><span class="card-index">B</span><div><h3>Customer Aging Visualization</h3><p>Stacked AR balance by customer and aging category</p></div></div></div>
+              <div class="chart-wrap"><canvas id="customer-chart" role="img" aria-label="Stacked bar chart showing accounts receivable aging by customer"></canvas></div>
+            </section>
+            <article class="audit-card"><div class="audit-icon" aria-hidden="true">◎</div><div><span>Audit Observation</span><p id="audit-two"></p></div></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="analysis-panel" id="panel-three" role="tabpanel" aria-labelledby="tab-three" data-panel="three-dimensional" hidden>
+      <div class="section-heading">
+        <div><p class="section-kicker">Analysis 03</p><h2>Three-Dimensional Aging Analysis</h2></div>
+        <p>Analyze receivables by Aging Classification and Customer Type.</p>
+      </div>
+      <div class="analysis-grid">
+        <aside class="workflow-panel" aria-labelledby="workflow-three-title">
+          <div class="panel-label"><span>Workflow</span><small>Alteryx logic</small></div>
+          <div class="workflow-intro"><h3 id="workflow-three-title">Compare customer types</h3><p>The aged population is pivoted by customer type, then transformed into a grouped visual comparison.</p></div>
+          <div class="workflow-canvas compact" data-workflow="three">
+            <button class="workflow-node node-output" type="button" data-title="Processed AR Data" data-detail="Uses the same complete transaction population so every analysis reconciles to total AR."><span class="node-icon" aria-hidden="true">AR</span><span><strong>Processed AR Data</strong><small>Uses cleaned invoice age, customer type, balance, and aging category fields.</small></span></button>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-block" type="button" data-title="Block Until Done" data-detail="Routes the processed data to the customer-type pivot and chart outputs."><span class="node-icon" aria-hidden="true">Ⅱ</span><span><strong>Block Until Done</strong><small>Completes classification before customer-type outputs are generated.</small></span></button>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-crosstab featured" type="button" data-title="Cross Tab — Classification × Customer Type" data-detail="Uses Classification for rows, dynamic customer types for columns, and summed Balance for values."><span class="node-icon" aria-hidden="true">⊞</span><span><strong>Cross Tab</strong><small>Pivots aging classifications against customer types using summed balances.</small></span></button>
+            <div class="config-card" aria-label="Cross Tab configuration"><div><span>Rows</span><strong>Classification</strong></div><div><span>Columns</span><strong>Customer Type</strong></div><div><span>Values</span><strong>Balance</strong></div><div><span>Aggregation</span><strong>Sum</strong></div></div>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-chart" type="button" data-title="Interactive Chart" data-detail="Builds a bar chart with Classification on X, Balance on Y, and separate series for each Customer Type."><span class="node-icon" aria-hidden="true">▥</span><span><strong>Interactive Chart</strong><small>Compares outstanding balances across aging groups and customer types.</small></span></button>
+            <span class="connector" aria-hidden="true"></span>
+            <button class="workflow-node node-output" type="button" data-title="Render / Output" data-detail="Represents the final tabular and visual analysis delivered for audit review."><span class="node-icon" aria-hidden="true">OUT</span><span><strong>Render / Output</strong><small>Presents the completed aging table and visualization for review.</small></span></button>
+          </div>
+          <div class="workflow-detail" aria-live="polite"><span>What this step does</span><strong>Select a workflow step</strong><p>Choose any node to see how it contributes to the analysis.</p></div>
+        </aside>
+        <div class="output-panel">
+          <div class="panel-label"><span>Output</span><small id="as-of-three">Awaiting data</small></div>
+          <div class="empty-state" data-empty="three"><div class="empty-glyph" aria-hidden="true">▥</div><h3>Customer-type analysis is ready after upload</h3><p>Load a compatible workbook to detect customer types dynamically and compare their aging profiles.</p></div>
+          <div class="analysis-results" data-results="three" hidden>
+            <section class="output-card pivot-card">
+              <div class="card-heading"><div><span class="card-index">A</span><div><h3>Aging Classification × Customer Type</h3><p>Sum of outstanding balance</p></div></div><span class="reconcile-badge">Reconciled</span></div>
+              <div class="table-shell"><table id="customer-type-pivot-table"><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
+            </section>
+            <section class="output-card chart-card large-chart">
+              <div class="card-heading"><div><span class="card-index">B</span><div><h3>AR Aging by Customer Type</h3><p>Grouped balance comparison across aging classifications</p></div></div></div>
+              <div class="chart-wrap"><canvas id="customer-type-chart" role="img" aria-label="Grouped bar chart showing accounts receivable aging by customer type"></canvas></div>
+            </section>
+            <article class="audit-card"><div class="audit-icon" aria-hidden="true">◎</div><div><span>Audit Observation</span><p id="audit-three"></p></div></article>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>ACC 455 <span aria-hidden="true">·</span> Audit Data Analytics</p>
+    <p>Workbook processing occurs locally in your browser.</p>
+  </footer>
+</body>
+</html>
