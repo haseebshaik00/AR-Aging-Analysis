@@ -128,6 +128,28 @@ button { color: inherit; }
   letter-spacing: .01em;
 }
 
+.header-meta-block {
+  flex: 0 0 auto;
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+
+.creator-credit {
+  margin: 0 4px 0 0;
+  color: #aeb1ba;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.creator-credit a {
+  color: #d8b9e2;
+  font-weight: 720;
+  text-decoration: none;
+}
+
+.creator-credit a:hover { color: #8ed5f0; text-decoration: underline; }
+
 .dataset-meta {
   flex: 0 0 auto;
   margin: 0;
@@ -255,6 +277,7 @@ button { color: inherit; }
 
 .upload-button,
 .reset-button,
+.download-button,
 .quality-button {
   min-height: 46px;
   padding: 0 16px;
@@ -333,6 +356,26 @@ button { color: inherit; }
   background: linear-gradient(120deg, #fff3f5 0%, #f5d2d8 48%, #e99faa 100%);
   border-color: #dd9ca7;
 }
+
+.download-button {
+  min-width: 178px;
+  color: #174d3c;
+  background: linear-gradient(110deg, #eefaf3 0%, #bde8cd 52%, #69c798 100%);
+  border: 1px solid #96d3af;
+  box-shadow: 0 3px 10px rgba(47, 132, 93, .11);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.download-button:hover {
+  color: #103c2e;
+  background: linear-gradient(110deg, #e2f7ea 0%, #a8dfbd 48%, #50b985 100%);
+  border-color: #70c495;
+  box-shadow: 0 6px 14px rgba(47, 132, 93, .16);
+  transform: translateY(-1px);
+}
+
+.download-icon { font-size: 16px; line-height: 1; }
 
 .quality-button {
   min-width: 112px;
@@ -767,6 +810,8 @@ tfoot th, tfoot td { padding-block: 11px; background: #f4f4f6; border-top: 1px s
 
 @media (max-width: 920px) {
   .header-inner { align-items: flex-start; flex-direction: column; gap: 22px; padding-top: 34px; }
+  .header-meta-block { width: 100%; justify-items: stretch; }
+  .creator-credit { margin-right: 2px; text-align: right; }
   .dataset-meta { width: 100%; grid-template-columns: 1.4fr .8fr 1fr; }
   .dataset-meta div { min-height: 58px; }
   .control-bar { flex-wrap: wrap; }
@@ -809,6 +854,7 @@ tfoot th, tfoot td { padding-block: 11px; background: #f4f4f6; border-top: 1px s
     padding-inline: 8px;
     flex: 0 0 104px;
   }
+  .download-button { min-width: 0; padding-inline: 10px; font-size: 10.5px; }
   .section-heading { padding-block: 12px; }
   .section-heading h2 { font-size: 22px; }
   .workflow-inputs, .workflow-outputs { grid-template-columns: 1fr; }
@@ -858,12 +904,13 @@ tfoot th, tfoot td { padding-block: 11px; background: #f4f4f6; border-top: 1px s
   .subtitle { margin-top: 4px; font-size: 10.5px; line-height: 1.2; }
 
   .dataset-meta div {
-    min-height: 50px;
-    padding: 8px 14px;
+    min-height: 42px;
+    padding: 6px 12px;
   }
 
-  .dataset-meta dt { margin-bottom: 2px; font-size: 8px; line-height: 1.2; }
-  .dataset-meta dd { font-size: 11px; line-height: 1.25; }
+  .dataset-meta dt { margin-bottom: 1px; font-size: 7.5px; line-height: 1.15; }
+  .dataset-meta dd { font-size: 10.5px; line-height: 1.2; }
+  .creator-credit { font-size: 9px; }
 
   .analysis-nav { position: relative; top: auto; }
   .tab-button { min-height: 44px; padding-inline: 16px; gap: 9px; font-size: 12px; }
@@ -883,6 +930,7 @@ tfoot th, tfoot td { padding-block: 11px; background: #f4f4f6; border-top: 1px s
 
   .upload-button,
   .reset-button,
+  .download-button,
   .quality-button {
     min-height: 36px;
     padding-inline: 12px;
@@ -1192,9 +1240,11 @@ tfoot th, tfoot td { padding-block: 11px; background: #f4f4f6; border-top: 1px s
   .brand-block h1 { font-size: clamp(24px, 2.05vw, 29px); }
   .subtitle { margin-top: 3px; font-size: 9.5px; }
 
-  .dataset-meta div { min-height: 44px; padding: 6px 12px; }
+  .header-meta-block { gap: 3px; }
+  .dataset-meta div { min-height: 38px; padding: 5px 11px; }
   .dataset-meta dt { margin-bottom: 1px; font-size: 7px; }
   .dataset-meta dd { font-size: 10px; }
+  .creator-credit { font-size: 8.5px; }
 
   .tab-button { min-height: 40px; font-size: 11.5px; }
   .tab-index { font-size: 17px; }
@@ -1203,6 +1253,7 @@ tfoot th, tfoot td { padding-block: 11px; background: #f4f4f6; border-top: 1px s
   .control-bar { min-height: 42px; height: 42px; padding: 4px 6px; }
   .upload-button,
   .reset-button,
+  .download-button,
   .quality-button { min-height: 32px; font-size: 10.5px; }
   .date-control input,
   .dataset-status strong,
@@ -1307,4 +1358,17 @@ tfoot th, tfoot td { padding-block: 11px; background: #f4f4f6; border-top: 1px s
   .audit-icon { width: 22px; height: 22px; }
   .audit-card span { font-size: 7px; }
   .audit-card p { margin-top: 1px; font-size: 8px; }
+}
+
+@media (min-width: 921px) and (max-width: 1180px) {
+  .control-bar { gap: 5px; }
+  .upload-button,
+  .reset-button,
+  .download-button,
+  .quality-button { padding-inline: 8px; font-size: 10.5px; }
+  .upload-button { min-width: 150px; }
+  .date-control { min-width: 140px; padding-inline: 8px; }
+  .download-button { min-width: 140px; }
+  .dataset-status { min-width: 135px; padding-inline: 8px; gap: 6px; }
+  .quality-button { min-width: 96px; }
 }
