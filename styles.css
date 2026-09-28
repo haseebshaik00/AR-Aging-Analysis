@@ -321,6 +321,19 @@ button { color: inherit; }
 .reset-button:hover,
 .quality-button:not(:disabled):hover { color: var(--text-primary); border-color: var(--border-strong); background: var(--surface-muted); }
 
+.reset-button {
+  color: #8a3546;
+  background: linear-gradient(120deg, #fff8f9 0%, #f9e3e7 52%, #efbac3 100%);
+  border-color: #e8bdc5;
+  box-shadow: 0 3px 10px rgba(145, 70, 84, .08);
+}
+
+.reset-button:hover {
+  color: #742637;
+  background: linear-gradient(120deg, #fff3f5 0%, #f5d2d8 48%, #e99faa 100%);
+  border-color: #dd9ca7;
+}
+
 .quality-button {
   min-width: 112px;
   flex-direction: column;
@@ -779,8 +792,23 @@ tfoot th, tfoot td { padding-block: 11px; background: #f4f4f6; border-top: 1px s
   .control-bar > * { flex: 1 1 150px; }
   .upload-button { width: 100%; }
   .date-control { min-width: 0; }
-  .dataset-status { order: 3; width: 100%; flex-basis: 100%; }
-  .quality-button { flex: 0 0 108px; }
+  .dataset-status {
+    order: 3;
+    width: auto;
+    min-width: 0;
+    padding-inline: 8px;
+    flex: 1 1 0;
+    border-left: 0;
+  }
+  .dataset-status .status-mark { width: 22px; height: 22px; }
+  .dataset-status strong { font-size: 11px; }
+  .dataset-status small { font-size: 9px; }
+  .quality-button {
+    order: 4;
+    min-width: 104px;
+    padding-inline: 8px;
+    flex: 0 0 104px;
+  }
   .section-heading { padding-block: 12px; }
   .section-heading h2 { font-size: 22px; }
   .workflow-inputs, .workflow-outputs { grid-template-columns: 1fr; }
@@ -953,6 +981,8 @@ tfoot th, tfoot td { padding-block: 11px; background: #f4f4f6; border-top: 1px s
     justify-content: flex-start;
     overflow: hidden;
   }
+
+  .workflow-canvas.compact { justify-content: center; }
 
   .workflow-inputs,
   .workflow-outputs { gap: 7px; }
